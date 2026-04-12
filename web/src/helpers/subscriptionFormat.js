@@ -7,7 +7,11 @@ export function formatSubscriptionDuration(plan, t) {
     day: t('天'),
     hour: t('小时'),
     custom: t('自定义'),
+    unlimited: t('无限期'),
   };
+  if (unit === 'unlimited') {
+    return t('无限期');
+  }
   if (unit === 'custom') {
     const seconds = plan?.custom_seconds || 0;
     if (seconds >= 86400) return `${Math.floor(seconds / 86400)} ${t('天')}`;

@@ -293,6 +293,9 @@ func migrateDB() error {
 			return err
 		}
 	}
+	if err := EnsureGlobalSubscriptionPlan(); err != nil {
+		common.SysLog(fmt.Sprintf("Warning: failed to ensure global subscription plan: %v", err))
+	}
 	return nil
 }
 

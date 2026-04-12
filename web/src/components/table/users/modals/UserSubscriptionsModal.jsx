@@ -1,40 +1,18 @@
-/*
-Copyright (C) 2025 QuantumNous
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-For commercial licensing, please contact support@quantumnous.com
-*/
-
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Button,
   Empty,
   Modal,
-  Select,
   SideSheet,
   Space,
   Tag,
   Typography,
 } from '@douyinfe/semi-ui';
-import { IconPlusCircle } from '@douyinfe/semi-icons';
 import {
   IllustrationNoResult,
   IllustrationNoResultDark,
 } from '@douyinfe/semi-illustrations';
 import { API, showError, showSuccess } from '../../../../helpers';
-import { convertUSDToCurrency } from '../../../../helpers/render';
 import { useIsMobile } from '../../../../hooks/common/useIsMobile';
 import CardTable from '../../../common/ui/CardTable';
 
@@ -52,10 +30,11 @@ function renderStatusTag(sub, t) {
 
   const isExpiredByTime = end > 0 && end < now;
   const isActive = status === 'active' && !isExpiredByTime;
+  const isUnlimited = end === 0 && status === 'active';
   if (isActive) {
     return (
       <Tag color='green' shape='circle' size='small'>
-        {t('生效')}
+        {isUnlimited ? t('永久生效') : t('生效')}
       </Tag>
     );
   }
@@ -76,57 +55,16 @@ function renderStatusTag(sub, t) {
 const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [plansLoading, setPlansLoading] = useState(false);
-
-  const [plans, setPlans] = useState([]);
-  const [selectedPlanId, setSelectedPlanId] = useState(null);
 
   const [subs, setSubs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-
-  const planTitleMap = useMemo(() => {
-    const map = new Map();
-    (plans || []).forEach((p) => {
-      const id = p?.plan?.id;
-      const title = p?.plan?.title;
-      if (id) map.set(id, title || `#${id}`);
-    });
-    return map;
-  }, [plans]);
 
   const pagedSubs = useMemo(() => {
     const start = Math.max(0, (Number(currentPage || 1) - 1) * pageSize);
     const end = start + pageSize;
     return (subs || []).slice(start, end);
   }, [subs, currentPage]);
-
-  const planOptions = useMemo(() => {
-    return (plans || []).map((p) => ({
-      label: `${p?.plan?.title || ''} (${convertUSDToCurrency(
-        Number(p?.plan?.price_amount || 0),
-        2,
-      )})`,
-      value: p?.plan?.id,
-    }));
-  }, [plans]);
-
-  const loadPlans = async () => {
-    setPlansLoading(true);
-    try {
-      const res = await API.get('/api/subscription/admin/plans');
-      if (res.data?.success) {
-        setPlans(res.data.data || []);
-      } else {
-        showError(res.data?.message || t('加载失败'));
-      }
-    } catch (e) {
-      showError(t('请求失败'));
-    } finally {
-      setPlansLoading(false);
-    }
-  };
 
   const loadUserSubscriptions = async () => {
     if (!user?.id) return;
@@ -151,47 +89,12 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
 
   useEffect(() => {
     if (!visible) return;
-    setSelectedPlanId(null);
     setCurrentPage(1);
-    loadPlans();
     loadUserSubscriptions();
   }, [visible]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
-  };
-
-  const createSubscription = async () => {
-    if (!user?.id) {
-      showError(t('用户信息缺失'));
-      return;
-    }
-    if (!selectedPlanId) {
-      showError(t('请选择订阅套餐'));
-      return;
-    }
-    setCreating(true);
-    try {
-      const res = await API.post(
-        `/api/subscription/admin/users/${user.id}/subscriptions`,
-        {
-          plan_id: selectedPlanId,
-        },
-      );
-      if (res.data?.success) {
-        const msg = res.data?.data?.message;
-        showSuccess(msg ? msg : t('新增成功'));
-        setSelectedPlanId(null);
-        await loadUserSubscriptions();
-        onSuccess?.();
-      } else {
-        showError(res.data?.message || t('新增失败'));
-      }
-    } catch (e) {
-      showError(t('请求失败'));
-    } finally {
-      setCreating(false);
-    }
   };
 
   const invalidateSubscription = (subId) => {
@@ -254,28 +157,18 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
         width: 70,
       },
       {
-        title: t('套餐'),
-        key: 'plan',
-        width: 180,
+        title: t('来源'),
+        key: 'source',
+        width: 100,
         render: (_, record) => {
           const sub = record?.subscription;
-          const planId = sub?.plan_id;
-          const title =
-            planTitleMap.get(planId) || (planId ? `#${planId}` : '-');
-          return (
-            <div className='min-w-0'>
-              <div className='font-medium truncate'>{title}</div>
-              <div className='text-xs text-gray-500'>
-                {t('来源')}: {sub?.source || '-'}
-              </div>
-            </div>
-          );
+          return <span>{sub?.source || '-'}</span>;
         },
       },
       {
         title: t('状态'),
         key: 'status',
-        width: 90,
+        width: 100,
         render: (_, record) => renderStatusTag(record?.subscription, t),
       },
       {
@@ -284,13 +177,15 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
         width: 200,
         render: (_, record) => {
           const sub = record?.subscription;
+          const isUnlimited = sub?.end_time === 0;
           return (
             <div className='text-xs text-gray-600'>
               <div>
                 {t('开始')}: {formatTs(sub?.start_time)}
               </div>
               <div>
-                {t('结束')}: {formatTs(sub?.end_time)}
+                {t('结束')}:{' '}
+                {isUnlimited ? t('无限期') : formatTs(sub?.end_time)}
               </div>
             </div>
           );
@@ -347,7 +242,7 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
         },
       },
     ];
-  }, [t, planTitleMap]);
+  }, [t]);
 
   return (
     <SideSheet
@@ -371,31 +266,6 @@ const UserSubscriptionsModal = ({ visible, onCancel, user, t, onSuccess }) => {
       }
     >
       <div className='p-4'>
-        {/* 顶部操作栏：新增订阅 */}
-        <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4'>
-          <div className='flex gap-2 flex-1'>
-            <Select
-              placeholder={t('选择订阅套餐')}
-              optionList={planOptions}
-              value={selectedPlanId}
-              onChange={setSelectedPlanId}
-              loading={plansLoading}
-              filter
-              style={{ minWidth: isMobile ? undefined : 300, flex: 1 }}
-            />
-            <Button
-              type='primary'
-              theme='solid'
-              icon={<IconPlusCircle />}
-              loading={creating}
-              onClick={createSubscription}
-            >
-              {t('新增订阅')}
-            </Button>
-          </div>
-        </div>
-
-        {/* 订阅列表 */}
         <CardTable
           columns={columns}
           dataSource={pagedSubs}
