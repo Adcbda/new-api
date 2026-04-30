@@ -3,7 +3,6 @@ package controller
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -43,7 +42,7 @@ func getDiscordUserInfoByCode(code string) (*DiscordUser, error) {
 	values.Set("client_secret", system_setting.GetDiscordSettings().ClientSecret)
 	values.Set("code", code)
 	values.Set("grant_type", "authorization_code")
-	values.Set("redirect_uri", fmt.Sprintf("%s/oauth/discord", system_setting.ServerAddress))
+	values.Set("redirect_uri", common.BuildPublicURL(system_setting.ServerAddress, "/oauth/discord"))
 	formData := values.Encode()
 	req, err := http.NewRequest("POST", "https://discord.com/api/v10/oauth2/token", strings.NewReader(formData))
 	if err != nil {

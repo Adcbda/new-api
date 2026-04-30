@@ -27,6 +27,7 @@ import {
   showSuccess,
   encodeToBase64,
 } from '../../helpers';
+import { originWithBasePath } from '../../helpers/basePath';
 import { ITEMS_PER_PAGE } from '../../constants';
 import { useTableCompactMode } from '../common/useTableCompactMode';
 import {
@@ -229,7 +230,7 @@ export const useTokensData = (openFluentNotification, openCCSwitchModal) => {
       serverAddress = status.server_address;
     }
     if (serverAddress === '') {
-      serverAddress = window.location.origin;
+      serverAddress = originWithBasePath();
     }
     if (url.includes('{cherryConfig}') === true) {
       let cherryConfig = {

@@ -32,6 +32,7 @@ import {
   getModelCategories,
   selectFilter,
 } from '../../../helpers';
+import { originWithBasePath } from '../../../helpers/basePath';
 import CardPro from '../../common/ui/CardPro';
 import TokensTable from './TokensTable';
 import TokensActions from './TokensActions';
@@ -229,7 +230,7 @@ function TokensPage() {
         serverAddress = status.server_address || '';
       } catch (_) {}
     }
-    if (!serverAddress) serverAddress = window.location.origin;
+    if (!serverAddress) serverAddress = originWithBasePath();
 
     let apiKeyToUse = '';
     if (overrideKey) {

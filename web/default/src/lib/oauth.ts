@@ -1,4 +1,5 @@
 import { api } from './api'
+import { absoluteUrlWithBasePath } from './base-path'
 
 // ============================================================================
 // OAuth URL Builders
@@ -19,7 +20,7 @@ export function buildDiscordOAuthUrl(clientId: string, state: string): string {
   url.searchParams.set('client_id', clientId)
   url.searchParams.set(
     'redirect_uri',
-    `${window.location.origin}/oauth/discord`
+    absoluteUrlWithBasePath('/oauth/discord')
   )
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', 'identify+openid')
@@ -37,7 +38,7 @@ export function buildOIDCOAuthUrl(
 ): string {
   const url = new URL(authUrl)
   url.searchParams.set('client_id', clientId)
-  url.searchParams.set('redirect_uri', `${window.location.origin}/oauth/oidc`)
+  url.searchParams.set('redirect_uri', absoluteUrlWithBasePath('/oauth/oidc'))
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', 'openid profile email')
   url.searchParams.set('state', state)

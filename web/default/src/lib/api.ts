@@ -2,13 +2,14 @@ import axios from 'axios'
 import i18next from 'i18next'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
+import { APP_BASE_PATH } from './base-path'
 
 // ============================================================================
 // Axios Instance Configuration
 // ============================================================================
 
 // Base URL: empty string for same-origin API requests
-const baseURL = ''
+const baseURL = APP_BASE_PATH
 
 // Create axios instance with default config
 export const api = axios.create({

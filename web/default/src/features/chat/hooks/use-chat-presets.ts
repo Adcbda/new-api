@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useStatus } from '@/hooks/use-status'
+import { originWithBasePath } from '@/lib/base-path'
 import type { SystemStatus } from '@/features/auth/types'
 import {
   type ChatPreset,
@@ -31,7 +32,7 @@ function extractServerAddress(status: SystemStatus | null) {
   }
 
   if (typeof window !== 'undefined') {
-    return window.location.origin
+    return originWithBasePath()
   }
 
   return ''

@@ -32,6 +32,7 @@ import {
 import { IconSearch, IconInfoCircle } from '@douyinfe/semi-icons';
 import { Settings } from 'lucide-react';
 import { copy, showError, showInfo, showSuccess } from '../../../../helpers';
+import { withBasePath } from '../../../../helpers/basePath';
 import { MODEL_TABLE_PAGE_SIZE } from '../../../../constants';
 
 const ModelTestModal = ({
@@ -199,7 +200,7 @@ const ModelTestModal = ({
                     theme='light'
                     type='warning'
                     icon={<Settings size={12} />}
-                    onClick={() => window.open('/console/setting?tab=ratio', '_blank')}
+                    onClick={() => window.open(withBasePath('/console/setting?tab=ratio'), '_blank')}
                     style={{ width: 'fit-content' }}
                   >
                     {t('前往设置')}

@@ -28,6 +28,7 @@ import {
 } from '@douyinfe/semi-ui';
 import { useTranslation } from 'react-i18next';
 import { selectFilter } from '../../../../helpers';
+import { originWithBasePath } from '../../../../helpers/basePath';
 
 const APP_CONFIGS = {
   claude: {
@@ -60,7 +61,7 @@ function getServerAddress() {
       if (status.server_address) return status.server_address;
     }
   } catch (_) {}
-  return window.location.origin;
+  return originWithBasePath();
 }
 
 function buildCCSwitchURL(app, name, models, apiKey) {

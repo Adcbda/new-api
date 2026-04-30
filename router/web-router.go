@@ -38,9 +38,60 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 		}
 		c.Header("Cache-Control", "no-cache")
 		if common.GetTheme() == "classic" {
-			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.ClassicIndexPage)
+			c.Data(http.StatusOK, "text/html; charset=utf-8", prepareIndexPage(assets.ClassicIndexPage))
 		} else {
-			c.Data(http.StatusOK, "text/html; charset=utf-8", assets.DefaultIndexPage)
+			c.Data(http.StatusOK, "text/html; charset=utf-8", prepareIndexPage(assets.DefaultIndexPage))
 		}
 	})
+}
+
+func prepareIndexPage(indexPage []byte) []byte {
+	if common.AppBasePath == "" {
+		return indexPage
+	}
+
+	html := prefixRootHTMLReferences(string(indexPage), common.AppBasePath)
+	basePathJSON, err := common.Marshal(common.AppBasePath)
+	if err != nil {
+		basePathJSON = []byte(`""`)
+	}
+	injection := `<base href="` + common.AppBasePath + `/"><script>window.__APP_BASE_PATH__=` + string(basePathJSON) + `;</script>`
+	if strings.Contains(html, "</head>") {
+		html = strings.Replace(html, "</head>", injection+"</head>", 1)
+	} else {
+		html = injection + html
+	}
+	return []byte(html)
+}
+
+func prefixRootHTMLReferences(html string, basePath string) string {
+	for _, attr := range []string{`href="`, `src="`} {
+		html = prefixRootHTMLAttribute(html, attr, basePath)
+	}
+	return html
+}
+
+func prefixRootHTMLAttribute(html string, attr string, basePath string) string {
+	search := attr + "/"
+	var builder strings.Builder
+	offset := 0
+	for {
+		idx := strings.Index(html[offset:], search)
+		if idx < 0 {
+			builder.WriteString(html[offset:])
+			break
+		}
+		idx += offset
+		valueStart := idx + len(attr)
+		builder.WriteString(html[offset:valueStart])
+		if strings.HasPrefix(html[valueStart:], basePath+"/") || strings.HasPrefix(html[valueStart:], basePath+`"`) {
+			builder.WriteString("/")
+			offset = valueStart + 1
+			continue
+		}
+		builder.WriteString(basePath)
+		builder.WriteString("/")
+		offset = valueStart + 1
+	}
+	return builder.String()
 }

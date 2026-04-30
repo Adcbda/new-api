@@ -24,6 +24,7 @@ import ThinkingContent from './ThinkingContent';
 import { Loader2, Check, X, Settings, AlertTriangle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { isAdmin } from '../../helpers/utils';
+import { withBasePath } from '../../helpers/basePath';
 
 const MessageContent = ({
   message,
@@ -93,7 +94,7 @@ const MessageContent = ({
                 theme='light'
                 type='warning'
                 icon={<Settings size={14} />}
-                onClick={() => window.open('/console/setting?tab=ratio', '_blank')}
+                onClick={() => window.open(withBasePath('/console/setting?tab=ratio'), '_blank')}
               >
                 {t('前往设置')}
               </Button>

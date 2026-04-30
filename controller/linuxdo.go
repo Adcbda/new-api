@@ -93,7 +93,7 @@ func getLinuxdoUserInfoByCode(code string, c *gin.Context) (*LinuxdoUser, error)
 	if c.Request.TLS != nil {
 		scheme = "https"
 	}
-	redirectURI := fmt.Sprintf("%s://%s/api/oauth/linuxdo", scheme, c.Request.Host)
+	redirectURI := fmt.Sprintf("%s://%s%s", scheme, c.Request.Host, common.BuildAppPath("/api/oauth/linuxdo"))
 
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")

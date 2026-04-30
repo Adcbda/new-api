@@ -177,7 +177,7 @@ func main() {
 	// Initialize session store
 	store := cookie.NewStore([]byte(common.SessionSecret))
 	store.Options(sessions.Options{
-		Path:     "/",
+		Path:     common.AppBasePathCookiePath(),
 		MaxAge:   2592000, // 30 days
 		HttpOnly: true,
 		Secure:   false,
@@ -203,7 +203,11 @@ func main() {
 	// Log startup success message
 	common.LogStartupSuccess(startTime, port)
 
-	err = server.Run(":" + port)
+	httpServer := &http.Server{
+		Addr:    ":" + port,
+		Handler: common.WithAppBasePath(server),
+	}
+	err = httpServer.ListenAndServe()
 	if err != nil {
 		common.FatalLog("failed to start HTTP server: " + err.Error())
 	}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { api } from '@/lib/api'
+import { absoluteUrlWithBasePath } from '@/lib/base-path'
 import { getOAuthState } from '../api'
 import {
   buildGitHubOAuthUrl,
@@ -183,7 +184,7 @@ export function useOAuthLogin(status: SystemStatus | null) {
         return
       }
 
-      const redirectUri = `${window.location.origin}/oauth/${provider.slug}`
+      const redirectUri = absoluteUrlWithBasePath(`/oauth/${provider.slug}`)
       const url = new URL(provider.authorization_endpoint)
       url.searchParams.set('client_id', provider.client_id)
       url.searchParams.set('redirect_uri', redirectUri)

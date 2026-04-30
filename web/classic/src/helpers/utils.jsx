@@ -21,6 +21,7 @@ import { Toast, Pagination } from '@douyinfe/semi-ui';
 import { toastConstants, BILLING_PRICING_VARS, BILLING_VAR_REGEX } from '../constants';
 import React from 'react';
 import { toast } from 'react-toastify';
+import { withBasePath } from './basePath';
 import {
   THINK_TAG_REGEX,
   MESSAGE_ROLES,
@@ -128,7 +129,7 @@ export function showError(error) {
           // 清除用户状态
           localStorage.removeItem('user');
           // toast.error('错误：未登录或登录已过期，请重新登录！', showErrorOptions);
-          window.location.href = '/login?expired=true';
+          window.location.href = withBasePath('/login?expired=true');
           break;
         case 429:
           Toast.error('错误：请求次数过多，请稍后再试！');
